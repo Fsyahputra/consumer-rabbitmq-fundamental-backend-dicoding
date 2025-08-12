@@ -23,6 +23,6 @@ export type TResponse = {
   playlist: {
     name: string;
     id: string;
-    songs: TSong[];
+    songs: any[];
   };
 };

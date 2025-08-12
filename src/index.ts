@@ -1,6 +1,6 @@
 import ampq from 'amqplib';
 import dotenv from 'dotenv';
-import mailService from './init';
+import mailService from './init'; /*  */
 import { TExportDTO } from './types/export';
 import exportSchema from './schema/export';
 dotenv.config();
@@ -22,9 +22,11 @@ const emailHandler = async (exportDTO: TExportDTO) => {
   }
 };
 
-const parseToExportDTO = (message: string): TExportDTO => {
+const parseToExportDTO = (message: ampq.ConsumeMessage): TExportDTO => {
   try {
-    const data = JSON.parse(message);
+    const bufferStr = message.content.toString();
+    const strigifiedObject = JSON.parse(bufferStr);
+    const data = JSON.parse(strigifiedObject);
     const { error } = exportSchema.validate(data);
     if (error) {
       throw new Error(`Validation error: ${error.message}`);
@@ -36,7 +38,7 @@ const parseToExportDTO = (message: string): TExportDTO => {
   }
 };
 
-const emailCb = async (msg: string): Promise<void> => {
+const emailCb = async (msg: ampq.ConsumeMessage): Promise<void> => {
   const exportDTO = parseToExportDTO(msg);
   await emailHandler(exportDTO);
 };
@@ -49,7 +51,7 @@ const consumeMessage = async () => {
 
     channel.consume(queueName, async (msg) => {
       if (msg) {
-        await emailCb(msg.content.toString());
+        await emailCb(msg);
         channel.ack(msg);
       }
     });

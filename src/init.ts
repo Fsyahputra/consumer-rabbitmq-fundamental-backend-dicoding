@@ -1,13 +1,16 @@
 import { Pool } from 'pg';
 import PlaylistService from './service/playlist';
 import MailService from './service/mail';
+import dotenv from 'dotenv';
+import config from './conf';
+dotenv.config();
 
 const pool = new Pool({
-  user: process.env['DB_USER'],
-  host: process.env['DB_HOST'],
-  database: process.env['DB_NAME'],
-  password: process.env['DB_PASSWORD'],
-  port: Number(process.env['DB_PORT']),
+  user: config.pg.user,
+  host: config.pg.host,
+  database: config.pg.database,
+  password: config.pg.password,
+  port: config.pg.port,
 });
 
 const playlistService = new PlaylistService(pool);

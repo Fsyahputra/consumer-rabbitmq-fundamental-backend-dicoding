@@ -1,7 +1,6 @@
 import autoBind from 'auto-bind';
 import { IExportService } from '../types/export';
 import { TExportDTO } from '../types/export';
-import dotenv from 'dotenv';
 import { Transporter } from 'nodemailer';
 import nodemailer from 'nodemailer';
 import {
@@ -10,7 +9,7 @@ import {
   TResponse,
   TSong,
 } from '../types/playlist';
-dotenv.config();
+import config from '../conf';
 
 class MailService implements IExportService {
   private transporter: Transporter;
@@ -20,11 +19,11 @@ class MailService implements IExportService {
 
   constructor(playlistService: IPlaylistService) {
     this.transporter = nodemailer.createTransport({
-      host: process.env['SMTP_HOST'],
-      port: Number(process.env['SMTP_PORT']),
+      host: config.smtp.host,
+      port: config.smtp.port,
       auth: {
-        user: process.env['SMTP_USER'],
-        pass: process.env['SMTP_PASSWORD'],
+        user: config.smtp.user,
+        pass: config.smtp.password,
       },
     });
 
@@ -37,22 +36,25 @@ class MailService implements IExportService {
       playlist: {
         name: playlist.name,
         id: playlist.id,
-        songs: songs,
+        songs: songs.map((song) => ({
+          id: song.id,
+          title: song.title,
+          performer: song.performer,
+        })),
       },
     };
   }
 
   public async exportData(dto: TExportDTO): Promise<void> {
-    const email = dto.target;
+    const email = dto.targetEmail;
     const playlist = await this.playlistService.getPlaylistById(dto.playlistId);
     const songs = await this.playlistService.getSongByPlaylistId(
       dto.playlistId
     );
     const formattedData = this.prepareExportData(playlist, songs);
-
     await this.transporter.sendMail({
-      from: process.env['SMTP_FROM'],
-      to: email,
+      from: config.smtp.from,
+      to: `Mailtrap Sandbox <${email}>`,
       subject: MailService.subject,
       text: MailService.message,
       attachments: [

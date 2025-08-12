@@ -1,8 +1,6 @@
 export type TExportDTO = {
-  target: string;
+  targetEmail: string;
   playlistId: string;
-  exportFormat: string;
-  data: any;
 };
 
 export interface IExportService {
