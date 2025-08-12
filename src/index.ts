@@ -1,12 +1,11 @@
 import ampq from 'amqplib';
-import dotenv from 'dotenv';
-import mailService from './init'; /*  */
+import mailService from './init';
 import { TExportDTO } from './types/export';
 import exportSchema from './schema/export';
-dotenv.config();
+import config from './conf';
 
-const host: string = process.env['RABBITMQ_SERVER'] || 'amqp://localhost';
-const queueName: string = process.env['RABBIT_QUEUE_NAME'] || 'playlists';
+const host: string = config.rabbitmq.server;
+const queueName: string = config.rabbitmq.queueName;
 
 const emailHandler = async (exportDTO: TExportDTO) => {
   try {
@@ -62,6 +61,7 @@ const consumeMessage = async () => {
 
 const init = async () => {
   consumeMessage();
+  console.log(`Listening for messages on queue: ${queueName}`);
   process.stdin.resume();
   process.on('SIGINT', () => {
     process.exit(0);
